@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oliver's Golf Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d1a0f;
+  --surface: #111a12;
+  --card: #162018;
+  --card2: #1a271c;
+  --green: #3d7a46;
+  --green-bright: #5aab65;
+  --green-dim: #2a5230;
+  --gold: #d4a843;
+  --gold-dim: #8a6b22;
+  --text: #f0f4ee;
+  --text2: #c8d4c4;
+  --muted: #8a9e8c;
+  --border: #1e3021;
+  --active: #4a9456;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.header-left h1 {
+  font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.header-left .hcp-display {
+  font-size: 48px;
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.header-left .hcp-label {
+  font-size: 12px;
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  margin-top: 4px;
+}
+.header-stats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.hstat {
+  text-align: right;
+}
+.hstat .val {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  line-height: 1;
+}
+.hstat .lbl {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  gap: 2px;
+}
+.tab {
+  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+}
+.tab.active { color: #ffffff; border-bottom-color: #ffffff; }
+.tab:hover:not(.active) { color: var(--text); }
+
+/* ── PANELS ── */
+.panel { display: none; padding: 24px 32px 40px; }
+.panel.active { display: block; }
+
+/* ── MAP PANEL ── */
+#map-container {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #0a1a0c;
+}
+#map { width: 100%; height: 100%; }
+
+.map-legend {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(13,26,15,0.92);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  z-index: 1000;
+}
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.legend-item:last-child { margin-bottom: 0; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ── COURSE LIST ── */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.course-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.course-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--green-dim);
+  transition: background 0.15s;
+}
+.course-card:hover { background: var(--card2); border-color: var(--green-dim); }
+.course-card:hover::before { background: var(--green-bright); }
+.course-card.highlighted { background: var(--card2); border-color: var(--green); }
+.course-card.highlighted::before { background: var(--green-bright); }
+
+.cc-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+.cc-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+.cc-stat .v { font-size: 18px; font-weight: 500; color: var(--green-bright); font-family: 'DM Mono', monospace; }
+.cc-stat .l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 1px; }
+.cc-rounds { font-size: 11px; color: var(--muted); margin-top: 8px; font-family: 'DM Mono', monospace; }
+
+/* ── ROUNDS TABLE ── */
+.rounds-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.rounds-header h2 { font-size: 16px; font-weight: 600; color: var(--text); }
+
+.filter-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.filter-btn.active, .filter-btn:hover { background: var(--green-dim); border-color: var(--green); color: var(--text); }
+
+.rounds-table { width: 100%; border-collapse: collapse; }
+.rounds-table th {
+  text-align: left;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--text2);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.rounds-table td {
+  padding: 11px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(30,48,33,0.5);
+  vertical-align: middle;
+}
+.rounds-table tr:hover td { background: var(--card); }
+
+.pts-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 24px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Mono', monospace;
+}
+.pts-great { background: rgba(45,106,53,0.2); color: #5aab65; }
+.pts-good { background: rgba(90,171,101,0.15); color: var(--green-bright); }
+.pts-warn { background: rgba(212,168,67,0.15); color: var(--gold); }
+.pts-bad { background: rgba(192,57,43,0.15); color: #e74c3c; }
+
+.hcp-pill {
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  padding: 2px 8px;
+  background: var(--surface);
+  border-radius: 10px;
+}
+
+.date-cell { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+.course-cell { font-weight: 500; }
+
+/* ── HCP CHART ── */
+.chart-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.chart-title { font-size: 13px; color: var(--text2); font-family: 'DM Mono', monospace; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+canvas { display: block; }
+
+/* ── TOOLTIP ── */
+.tooltip {
+  position: fixed;
+  background: var(--card2);
+  border: 1px solid var(--green-dim);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  pointer-events: none;
+  z-index: 1000;
+  display: none;
+  max-width: 200px;
+}
+.tooltip .t-name { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.tooltip .t-stat { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+/* Leaflet overrides */
+.leaflet-popup-content-wrapper {
+  background: var(--card2) !important;
+  border: 1px solid var(--green-dim) !important;
+  border-radius: 8px !important;
+  color: var(--text) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+}
+.leaflet-popup-tip { background: var(--card2) !important; }
+.leaflet-popup-content { margin: 12px 14px !important; }
+.popup-name { font-weight: 600; font-size: 14px; margin-bottom: 6px; color: var(--green-bright); }
+.popup-stat { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--muted); margin-top: 3px; }
+.popup-stat span { color: var(--text); }
+
+/* ── DANMARK TAB ── */
+.dk-stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  flex: 1;
+  min-width: 140px;
+}
+.dk-stat-card .dsv { font-size: 28px; font-weight: 300; font-family: 'DM Mono', monospace; color: var(--green-bright); line-height: 1; }
+.dk-stat-card .dsl { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+.region-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.region-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--card2);
+  border-bottom: 1px solid var(--border);
+}
+.region-header h3 { font-size: 14px; font-weight: 600; color: var(--text); }
+.region-pct { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text2); min-width: 36px; text-align: right; }
+.region-progress-wrap { display: flex; align-items: center; gap: 10px; }
+.region-bar-bg { width: 120px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.region-bar-fill { height: 100%; background: var(--text2); border-radius: 3px; transition: width 0.6s ease; }
+
+.course-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; background: var(--border); }
+.course-item {
+  background: var(--card);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  transition: background 0.1s;
+}
+.course-item:hover { background: var(--card2); }
+.course-item.played { color: var(--text); }
+.course-item.not-played { color: var(--muted); }
+.course-check { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+.course-check.yes { background: rgba(39,174,96,0.2); color: #27ae60; }
+.course-check.no { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+
+/* ── INTRO ── */
+.intro-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.intro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+.intro-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.intro-item:hover {
+  background: var(--card2);
+  border-color: var(--green);
+  transform: translateY(-1px);
+}
+.intro-icon { font-size: 20px; }
+.intro-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.intro-text { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+.fact-banner {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: rgba(61,122,70,0.12);
+  border: 1px solid var(--green-dim);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+.fact-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.fact-text { font-size: 13px; color: var(--text2); line-height: 1.6; }
+.fact-text strong { color: var(--text); }
+
+/* ── QUOTES ── */
+.quotes-section { margin-top: 32px; padding-top: 8px; }
+.quotes-title {
+  font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;
+}
+.quotes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.quote-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--green-dim);
+}
+.quote-text {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+.quote-attr {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+}
+
+/* ── GUIDE / FORM ── */
+.form-row { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+.form-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--green); }
+.form-input::placeholder { color: var(--muted); }
+.form-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
+.toggle-holes {
+  padding: 8px 20px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif;
+  font-size: 14px; cursor: pointer; transition: all 0.15s;
+}
+.toggle-holes.active { background: var(--green-dim); border-color: var(--green); color: var(--text); }
+.submit-btn {
+  background: var(--green); color: #fff; border: none; border-radius: 8px;
+  padding: 12px 24px; font-size: 15px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.15s;
+}
+.submit-btn:hover { background: var(--green-bright); }
+.guide-step { display: flex; gap: 14px; align-items: flex-start; }
+.guide-num {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--green-dim);
+  color: var(--green-bright); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0; font-family: 'DM Mono', monospace;
+}
+.guide-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+.guide-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.saved-round-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 13px;
+}
+.saved-round-row:last-child { border-bottom: none; }
+.saved-del { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 4px; }
+.saved-del:hover { color: #e74c3c; }
+
+  header { padding: 20px 16px; }
+  .tabs { padding: 0 16px; }
+  .panel { padding: 16px 16px 32px; }
+  .hstat .val { font-size: 18px; }
+}
+
+@media (max-width: 600px) {
+  /* Header */
+  header {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .header-left h1 { font-size: 11px; letter-spacing: 1.5px; }
+  .header-left .hcp-display { font-size: 36px; }
+  .header-stats {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .hstat {
+    text-align: center;
+    padding: 10px 8px;
+    border-right: 1px solid var(--border);
+  }
+  .hstat:last-child { border-right: none; }
+  .hstat .val { font-size: 16px; }
+  .hstat .lbl { font-size: 9px; letter-spacing: 0.5px; }
+
+  /* Tabs — scrollable */
+  .tabs {
+    padding: 0 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 12px 14px; font-size: 12px; white-space: nowrap; }
+
+  /* Panel */
+  .panel { padding: 12px 12px 32px; }
+
+  /* Map */
+  #map-container { height: 340px; border-radius: 8px; }
+
+  /* Charts */
+  .chart-wrap { padding: 14px; }
+  .chart-title { font-size: 11px; margin-bottom: 12px; }
+
+  /* Course grid */
+  .course-grid { grid-template-columns: 1fr; gap: 8px; }
+  .cc-name { font-size: 13px; }
+  .cc-stat .v { font-size: 16px; }
+
+  /* Intro */
+  .intro-section { padding: 14px; }
+  .intro-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  /* Quotes */
+  .quotes-grid { grid-template-columns: 1fr; }
+
+  /* Rounds table */
+  .rounds-table th:nth-child(5),
+  .rounds-table td:nth-child(5) { display: none; }
+  .rounds-table th { font-size: 9px; padding: 6px 8px; }
+  .rounds-table td { padding: 9px 8px; font-size: 13px; }
+  .hcp-pill { font-size: 10px; padding: 2px 5px; }
+
+  /* Filter */
+  .rounds-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .filter-btn { padding: 5px 12px; font-size: 11px; }
+
+  /* Form */
+  .form-input { font-size: 16px; } /* prevents iOS zoom */
+  .toggle-holes { padding: 10px 16px; font-size: 13px; }
+  .submit-btn { width: 100%; padding: 14px; font-size: 16px; }
+
+  /* Danmark */
+  .dk-stats-row { flex-direction: column; }
+  .dk-stat-card { min-width: unset; }
+  .course-list { grid-template-columns: 1fr; }
+  .region-bar-bg { width: 80px; }
+
+  /* Guide steps */
+  .guide-step { gap: 10px; }
+  .guide-text { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Oliver's Golf Journey</h1>
+    <div class="hcp-display" id="current-hcp">–</div>
+    <div class="hcp-label">Nuværende handicap</div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat">
+      <div class="val" id="stat-rounds">–</div>
+      <div class="lbl">Runder</div>
+    </div>
+    <div class="hstat">
+      <div class="val" id="stat-best">–</div>
+      <div class="lbl">Bedste pts</div>
+    </div>
+    <div class="hstat">
+      <div class="val" id="stat-bestscore">–</div>
+      <div class="lbl">Bedste score</div>
+      
+    </div>
+    <div class="hstat">
+      <div class="val" id="stat-avg">–</div>
+      <div class="lbl">Snit pts (18H)</div>
+    </div>
+    <div class="hstat">
+      <div class="val" id="stat-courses">–</div>
+      <div class="lbl">Baner</div>
+    </div>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('map')">Overview</div>
+  <div class="tab" onclick="showTab('rounds')">Runder</div>
+  <div class="tab" onclick="showTab('danmark')">Danmark</div>
+  <div class="tab" onclick="showTab('guide')">+ Tilføj runde</div>
+</div>
+
+<!-- OVERVIEW PANEL -->
+<div class="panel active" id="panel-map">
+
+  <!-- Intro -->
+  <div class="intro-section">
+    <div class="intro-grid">
+      <div class="intro-item" onclick="document.getElementById('section-map').scrollIntoView({behavior:'smooth'})" style="cursor:pointer">
+        <div class="intro-icon">🗺</div>
+        <div class="intro-title">Kort</div>
+        <div class="intro-text">Se alle baner du har spillet markeret på kortet. Klik en prik for stats.</div>
+      </div>
+      <div class="intro-item" onclick="showTabFromIntro('rounds')" style="cursor:pointer">
+        <div class="intro-icon">📋</div>
+        <div class="intro-title">Runder</div>
+        <div class="intro-text">Komplet oversigt over alle dine runder med points, score og handicap.</div>
+      </div>
+      <div class="intro-item" onclick="showTabFromIntro('danmark')" style="cursor:pointer">
+        <div class="intro-icon">🇩🇰</div>
+        <div class="intro-title">Danmark</div>
+        <div class="intro-text">Hold styr på hvilke af Danmarks 146 18-hullers baner du har besøgt.</div>
+      </div>
+      <div class="intro-item" onclick="showTabFromIntro('guide')" style="cursor:pointer">
+        <div class="intro-icon">+</div>
+        <div class="intro-title">Tilføj runde</div>
+        <div class="intro-text">Log en ny runde direkte i appen. Data gemmes lokalt i din browser.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="section-map"></div>
+  <div id="map-container">
+    <div id="map"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Hjemmebane</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2d6a35"></div>36+ point</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#5aab65"></div>30–35 point</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#d4a843"></div>26–29 point</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div>Under 26 point</div>
+    </div>
+  </div>
+
+  <div class="chart-wrap" style="margin-top:24px;margin-bottom:16px">
+    <div class="chart-title">Points per runde <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0">(9-hullers runder ganget med 2)</span></div>
+    <canvas id="pts-chart" height="300"></canvas>
+  </div>
+
+  <div class="chart-wrap" style="margin-bottom:24px">
+    <div class="chart-title">Handicap progression — 2026</div>
+    <canvas id="hcp-chart" height="200"></canvas>
+  </div>
+
+  <div class="course-grid" id="course-grid"></div>
+
+  <!-- Quotes -->
+  <div class="quotes-section">
+    <div class="quotes-title">Golf i perspektiv</div>
+
+    <div class="fact-banner">
+      <div class="fact-icon">💡</div>
+      <div class="fact-text">
+        <strong>Vidste du?</strong> Ifølge USGA's handicap-forskning spiller den gennemsnitlige golfer til sit handicap eller bedre kun <strong>én ud af fire runder</strong> — og scorer i gennemsnit 3 slag over sit handicap. Dit handicap er dit potentiale, ikke din forventede daglige score. 30 point på en normal dag er godt golf.
+      </div>
+    </div>
+
+    <div class="quotes-grid">
+      <div class="quote-card">
+        <div class="quote-text">"A bad day of golf is 100 times better than a good day at work."</div>
+        <div class="quote-attr">— Ukendt</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"I have a tip that can take five strokes off anyone's game: it's called an eraser."</div>
+        <div class="quote-attr">— Arnold Palmer</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"Competitive golf is played mainly on a five-and-a-half-inch course — the space between your ears."</div>
+        <div class="quote-attr">— Bobby Jones</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"The most important shot in golf is the next one."</div>
+        <div class="quote-attr">— Ben Hogan</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"Golf is a game in which you yell fore, shoot six, and write down five."</div>
+        <div class="quote-attr">— Paul Harvey</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"You've got to be good enough to laugh at yourself, or you're going to be miserable in this game."</div>
+        <div class="quote-attr">— Gary Player</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"Golf?! You hit down to make the ball go up. You swing left and the ball goes right. The lowest score wins. And on top of that, the winner buys the drinks."</div>
+        <div class="quote-attr">— Ukendt</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"Nothing goes down slower than a golf handicap."</div>
+        <div class="quote-attr">— Bobby Nicholas</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"The best way to enjoy golf? Lower your expectations and raise your sense of humor."</div>
+        <div class="quote-attr">— Ukendt</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"It took me 17 years to get 3,000 hits in baseball. It took one afternoon on the golf course."</div>
+        <div class="quote-attr">— Hank Aaron</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"30 points on an average day is creditable golf by any standard. You should only play to your handicap three or four times a year."</div>
+        <div class="quote-attr">— The Social Golfer</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"Golfers are eternal optimists. We simply have to be — or we'd stash the clubs in the loft, never to be seen again."</div>
+        <div class="quote-attr">— Golf Monthly</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-text">"Fuck me to tears."</div>
+        <div class="quote-attr">— Oliver Dener</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ROUNDS PANEL -->
+<div class="panel" id="panel-rounds">
+  <div class="rounds-header">
+    <h2>Alle runder</h2>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterRounds('all', this)">Alle</button>
+      <button class="filter-btn" onclick="filterRounds('18h', this)">18 huller</button>
+      <button class="filter-btn" onclick="filterRounds('9h', this)">9 huller</button>
+    </div>
+  </div>
+  <table class="rounds-table">
+    <thead>
+      <tr>
+        <th>Dato</th>
+        <th>Bane</th>
+        <th>HCP før</th>
+        <th>Points</th>
+        <th>Hcp score</th>
+      </tr>
+    </thead>
+    <tbody id="rounds-body"></tbody>
+  </table>
+</div>
+
+<!-- DANMARK PANEL -->
+<div class="panel" id="panel-danmark">
+  <div id="dk-stats-row" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px;align-items:stretch"></div>
+  <div id="dk-regions" style="display:flex;flex-direction:column;gap:24px"></div>
+</div>
+
+<!-- GUIDE PANEL -->
+<div class="panel" id="panel-guide">
+  <div style="max-width:600px;margin:0 auto">
+
+    <div class="chart-wrap" style="margin-bottom:20px">
+      <div class="chart-title">Tilføj ny runde</div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px">
+
+        <div class="form-row">
+          <label class="form-label">Dato</label>
+          <input class="form-input" type="date" id="f-date">
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Bane</label>
+          <input class="form-input" type="text" id="f-course" placeholder="f.eks. Søllerød 18H">
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">HCP før runden</label>
+          <input class="form-input" type="number" id="f-hcp" step="0.1" min="0" max="54" placeholder="f.eks. 20.9">
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">HCP efter runden</label>
+          <input class="form-input" type="number" id="f-hcp-after" step="0.1" min="0" max="54" placeholder="f.eks. 20.3">
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Points</label>
+          <input class="form-input" type="number" id="f-pts" min="0" max="72" placeholder="f.eks. 35">
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Hcp score (brutto slag)</label>
+          <input class="form-input" type="number" id="f-score" min="50" max="200" placeholder="f.eks. 95">
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Antal huller</label>
+          <div style="display:flex;gap:10px">
+            <button class="toggle-holes active" id="btn-18" onclick="setHoles(false)">18 huller</button>
+            <button class="toggle-holes" id="btn-9" onclick="setHoles(true)">9 huller</button>
+          </div>
+        </div>
+
+        <div id="form-msg" style="font-size:13px;min-height:20px;font-family:'DM Mono',monospace"></div>
+
+        <button class="submit-btn" onclick="submitRound()">Gem runde →</button>
+      </div>
+    </div>
+
+    <div class="chart-wrap" style="margin-bottom:20px">
+      <div class="chart-title">Dine runder</div>
+      <div id="saved-rounds-list" style="margin-top:8px"></div>
+      <button onclick="clearSaved()" style="margin-top:12px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer">Nulstil alle runder</button>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-title">Vejledning — Sådan tilføjer du en runde</div>
+      <div style="display:flex;flex-direction:column;gap:16px;margin-top:8px">
+
+        <div class="guide-step">
+          <div class="guide-num">1</div>
+          <div>
+            <div class="guide-title">Find tallene i GolfBox</div>
+            <div class="guide-text">Åbn GolfBox → Handicap → Se dine seneste runder. Du finder dato, bane, HCP før runden, points og hcp score direkte der.</div>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="guide-num">2</div>
+          <div>
+            <div class="guide-title">Udfyld formularen ovenfor</div>
+            <div class="guide-text">Indtast alle felter og tryk "Gem runde". Runden gemmes lokalt i din browser.</div>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="guide-num">3</div>
+          <div>
+            <div class="guide-title">Se dine runder i appen</div>
+            <div class="guide-text">Dine gemte runder vises i listen ovenfor og indgår automatisk i din statistik under de andre faner. Intet skal sendes nogen steder.</div>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="guide-num">4</div>
+          <div>
+            <div class="guide-title">Hvad betyder felterne?</div>
+            <div class="guide-text">
+              <b>HCP før runden</b> — dit handicap inden du startede<br>
+              <b>HCP efter runden</b> — dit handicap efter runden (valgfrit, men anbefalet)<br>
+              <b>Points</b> — stableford points du lavede<br>
+              <b>Hcp score</b> — det brutto antal slag du slog (det store tal i GolfBox)<br>
+              <b>9 huller</b> — vælg dette hvis du kun spillede 9 huller
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+// ── DATA ──
+// Seed data — importeres automatisk første gang appen åbnes
+const SEED_ROUNDS = [
+  { date:'2026-04-02', course:'Ishøj GK 9H',         hcp:49.9, pts:22, score:53,  is9:true,  hcpAfter:49.9 },
+  { date:'2026-04-02', course:'Ishøj GK 9H',         hcp:49.9, pts:22, score:51,  is9:true,  hcpAfter:45.5 },
+  { date:'2026-04-18', course:'Søllerød 18H',         hcp:45.1, pts:33, score:122, is9:false, hcpAfter:44.5 },
+  { date:'2026-04-24', course:'Søllerød F9',          hcp:44.1, pts:19, score:54,  is9:true,  hcpAfter:44.1 },
+  { date:'2026-04-24', course:'Søllerød 18H',         hcp:41.9, pts:39, score:117, is9:false, hcpAfter:41.9 },
+  { date:'2026-05-02', course:'Nivå Golf Klub',        hcp:43.0, pts:23, score:128, is9:false, hcpAfter:43.0 },
+  { date:'2026-05-17', course:'Hjortespring 18H',     hcp:40.6, pts:40, score:112, is9:false, hcpAfter:40.6 },
+  { date:'2026-05-19', course:'Søllerød F9',          hcp:38.9, pts:23, score:54,  is9:true,  hcpAfter:38.9 },
+  { date:'2026-06-05', course:'Mølleåen 18H',         hcp:39.0, pts:37, score:115, is9:false, hcpAfter:39.0 },
+  { date:'2026-06-06', course:'Hillerød New Course',  hcp:38.8, pts:36, score:114, is9:false, hcpAfter:38.8 },
+  { date:'2026-06-09', course:'Søllerød 18H',         hcp:38.5, pts:37, score:113, is9:false, hcpAfter:38.5 },
+  { date:'2026-06-15', course:'The National Lakes',   hcp:38.7, pts:27, score:129, is9:false, hcpAfter:38.7 },
+  { date:'2026-06-16', course:'The National Links',   hcp:38.7, pts:32, score:121, is9:false, hcpAfter:38.7 },
+  { date:'2026-06-21', course:'Smørum F9',            hcp:38.4, pts:20, score:45,  is9:true,  hcpAfter:38.4 },
+  { date:'2026-06-21', course:'Albertslund 18H',      hcp:38.5, pts:29, score:109, is9:false, hcpAfter:38.5 },
+  { date:'2026-06-28', course:'Skovbo 18H',           hcp:37.9, pts:39, score:111, is9:false, hcpAfter:37.9 },
+  { date:'2026-07-05', course:'Værløse 18H',          hcp:35.6, pts:45, score:106, is9:false, hcpAfter:35.6 },
+  { date:'2026-07-06', course:'Søllerød F9',          hcp:35.0, pts:22, score:52,  is9:true,  hcpAfter:35.0 },
+  { date:'2026-07-11', course:'Korsør 18H',           hcp:34.2, pts:42, score:105, is9:false, hcpAfter:34.2 },
+  { date:'2026-07-12', course:'Mølleåen 18H',         hcp:32.3, pts:44, score:102, is9:false, hcpAfter:32.3 },
+  { date:'2026-07-13', course:'Køge Golf Klub',       hcp:32.2, pts:33, score:111, is9:false, hcpAfter:32.2 },
+  { date:'2026-07-15', course:'Søllerød 18H',         hcp:32.1, pts:32, score:110, is9:false, hcpAfter:32.1 },
+  { date:'2026-07-16', course:'Søllerød 18H',         hcp:31.0, pts:41, score:101, is9:false, hcpAfter:31.0 },
+  { date:'2026-07-18', course:'Hjortespring 18H',     hcp:30.0, pts:40, score:99,  is9:false, hcpAfter:30.0 },
+  { date:'2026-07-20', course:'Hillerød New Course',  hcp:29.4, pts:35, score:105, is9:false, hcpAfter:29.4 },
+];
+
+const STORAGE_KEY = 'golf_rounds_oliver_v1';
+
+// Auto-seed: importér SEED_ROUNDS første gang appen åbnes
+function initRounds() {
+  const existing = localStorage.getItem(STORAGE_KEY);
+  if (!existing) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_ROUNDS));
+  }
+}
+
+// Hent alle runder fra localStorage
+function getRounds() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  } catch(e) { return []; }
+}
+
+// Gem runder til localStorage
+function saveRounds(r) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(r));
+}
+
+// Dynamisk rounds variabel — altid opdateret fra localStorage
+let rounds = [];
+
+const courses = [
+  { name:'Søllerød GK',         lat:55.828, lng:12.503, home:false },
+  { name:'Ishøj GK',            lat:55.608, lng:12.327, home:false },
+  { name:'Nivå Golf Klub',       lat:55.930, lng:12.494, home:false },
+  { name:'Hjortespring GK',     lat:55.749, lng:12.370, home:false },
+  { name:'Mølleåen GK',         lat:55.878, lng:12.352, home:false },
+  { name:'Hillerød GK',         lat:55.938, lng:12.308, home:false },
+  { name:'The National Bara',   lat:55.490, lng:13.053, home:false },
+  { name:'Smørum GK',           lat:55.735, lng:12.257, home:false },
+  { name:'Albertslund GK',      lat:55.662, lng:12.348, home:false },
+  { name:'Skovbo GK',           lat:55.460, lng:12.143, home:false },
+  { name:'Værløse GK',          lat:55.762, lng:12.363, home:false },
+  { name:'Korsør GK',           lat:55.337, lng:11.153, home:false },
+  { name:'Køge Golf Klub',      lat:55.446, lng:12.068, home:false },
+];
+
+// Match rounds to courses
+function getCourseRounds(courseName) {
+  return rounds.filter(r => r.course.toLowerCase().includes(
+    courseName.toLowerCase().split(' ')[0].toLowerCase()
+  ) || courseName.toLowerCase().includes(r.course.toLowerCase().split(' ')[0].toLowerCase()));
+}
+
+function getBestPts(cname) {
+  const r = rounds.filter(r => r.course.toLowerCase().includes(cname.toLowerCase().split(' ')[0].toLowerCase()));
+  if (!r.length) return null;
+  return Math.max(...r.map(x => x.is9 ? x.pts * 2 : x.pts));
+}
+
+function getAvgPts(cname) {
+  const r = rounds.filter(r => r.course.toLowerCase().includes(cname.toLowerCase().split(' ')[0].toLowerCase()));
+  if (!r.length) return null;
+  return Math.round(r.reduce((a,b) => a + (b.is9 ? b.pts * 2 : b.pts), 0) / r.length);
+}
+
+function getRoundCount(cname) {
+  return rounds.filter(r => r.course.toLowerCase().includes(cname.toLowerCase().split(' ')[0].toLowerCase())).length;
+}
+
+// ── DANMARK DATA ──
+const danmarkCourses = {
+  'Sjælland': [
+    // 18 huller kun — fra golfmagasin.dk komplet liste
+    'Asserbo Golf Club','Brøndby Golfklub','CGC Golf Club',
+    'Dragør Golfklub','Faxe Golfklub','Fredensborg Golf Club',
+    'Furesø Golfklub','Gilleleje Golfklub','Greve Golfklub',
+    'Harekær GK','Helsingør Golf Club','Hillerød Golf Klub',
+    'Holbæk Golfklub','Hornbæk Golfklub','Hørsholm Golfklub',
+    'Kalundborg Golfklub','Kokkedal Golfklub','Københavns Golf Klub',
+    'Køge Golf Klub','Ledreborg Palace Golf Club','Lejre Golfklub',
+    'Lejre Golfcenter','Lynge-Uggeløse Golfklub','Midtsjællands Golfklub',
+    'Møn Golfklub','Mølleåen GK','Næstved Golfklub',
+    'Nivå Golf Klub','Odsherred Golfklub','Roskilde Golf Klub',
+    'Rønnede Golf Klub','Rungsted Golf Klub','Royal Golf Club',
+    'Simon\'s Golf Club','Skovbo GK','Sorø Golfklub',
+    'Stevns Golfklub','Sydsjællands GK','Taastrup Golfklub',
+    'Trelleborg Golfklub','Vallø Golfklub','Vordingborg Golfklub',
+    'Værebro Golfklub','Værløse GK','Søllerød GK',
+    'Smørum GK','Ishøj GK','Albertslund GK',
+    'Hjortespring GK','Farum GK','Skjoldenæsholm Golfklub',
+    'Køge Sydbanen',
+  ],
+  'Jylland': [
+    // 18+ huller fra golfmagasin.dk komplet liste
+    'Aalborg Golf Klub','Aarhus Aadal Golf Club','Aarhus Golf Club',
+    'Aars Golfklub','Aabybro Golfklub','Benniksgaard Golf Klub',
+    'Blokhus Golf Klub','Blåvandshuk Golfklub','Brande Golfklub',
+    'Breinholtgård Golf Klub','Dejbjerg Golf Klub','Djurs Golfklub',
+    'Dronninglund Golfklub','Ebeltoft Golf Club','Esbjerg Golfklub',
+    'Fanø Vesterhavsbads Golfklub','Frederikshavn Golf Klub',
+    'Give Golfklub','Grenaa Golfklub','Gyttegård Golf Klub',
+    'Haderslev Golfklub','Hammel Golf Klub','Hedensted Golf Klub',
+    'Herning Golf Klub','Himmerland Golf Klub','Hirtshals Golfklub',
+    'Hjarbæk Fjord Golf Klub','Hjørring Golfklub','Hobro Golfklub',
+    'Holmsland Klit Golfklub','Holstebro Golfklub','Horsens Golfklub',
+    'Hvalpsund Golf Club','Ikast Tullamore Golf Club',
+    'Jammerbugtens Golfklub','Jelling Golfklub','Juelsminde Golfklub',
+    'Kaj Lykke Golfklub','Kalø Golf Club','Karup Å Golfklub',
+    'Kellers Park Golf Club','Kolding Golf Club','Lemvig Golfklub',
+    'Lübker Golf Klub','Løkken Golfklub','Lyngbygaard Golf Klub',
+    'Mariagerfjord Golfklub','Mollerup Golf Club','Morsø Golfklub',
+    'Norddjurs Golfklub','Nordvestjysk Golfklub','Odder Golfklub',
+    'Outrup Golfklub','Randers Fjord Golfklub','Randers Golf Klub',
+    'Ribe Golf Klub','Rold Skov Golfklub','Royal Oak Golf Club',
+    'Rømø Golf Klub','Samsø Golfklub','Sebber Kloster Golf Klub',
+    'Silkeborg Ry Golfklub','Sindal Golf Klub','Skanderborg Golf Klub',
+    'Skive Golfklub','Skærbæk Mølle Golfklub','Søhøjlandet Golf Resort',
+    'Sønderjyllands Golfklub','Sønderborg Golfklub','Struer Golfklub',
+    'Sydthy Golfklub','Tange Sø Golfklub','Trehøje Golfklub',
+    'Tønder Golf Klub','Varde Golfklub','Vejen Golfklub',
+    'Vejle Golf Club','Viborg Golfklub',
+  ],
+  'Fyn': [
+    'Odense Golfklub','Odense Eventyr Golf','Odense Blommenslyst Golfklub',
+    'Langesø Golf','Sct. Knuds Golfklub','Svendborg Golfklub',
+    'Faaborg Golfklub','Midtfyns Golfklub','Vestfyns Golfklub',
+    'Barløseborg Golfklub','Golfklubben Lillebælt','Ærø Golf Klub',
+    'Great Northern Golf Club','Kerteminde Golfklub','Assens Golfklub',
+    'Nordborg Golfklub','Langeland Golfklub',
+  ],
+  'Bornholm': [
+    'Bornholms Golf Klub','Nexø Golfklub','Allinge Golfklub','Rønne Golfklub',
+  ],
+  'Sverige (besøgt)': [
+    'The National Bara (Lakes)','The National Bara (Links)',
+  ],
+};
+
+const TOTAL_DK_18H = 146;
+
+function coursePlayedKey(name) {
+  const played = rounds.map(r => r.course.toLowerCase());
+  const n = name.toLowerCase();
+  if (n.includes('bara') && n.includes('lakes')) return played.some(p => p.includes('lakes'));
+  if (n.includes('bara') && n.includes('links')) return played.some(p => p.includes('links'));
+  if (n.includes('harekær')) return played.some(p => p.includes('harekær'));
+  if (n.includes('mølleåen')) return played.some(p => p.includes('mølleåen'));
+  if (n.includes('hjortespring')) return played.some(p => p.includes('hjortespring'));
+  if (n.includes('hillerød')) return played.some(p => p.includes('hillerød'));
+  if (n.includes('køge sydbanen') || n === 'køge sydbanen') return played.some(p => p.includes('køge sydbanen') || p.includes('køge syd'));
+  if (n.includes('køge golf') || n.includes('køge gk')) return played.some(p => p.includes('køge golf') || p === 'køge gk');
+  if (n.includes('køge')) return played.some(p => p.includes('køge'));
+  if (n.includes('albertslund')) return played.some(p => p.includes('albertslund'));
+  if (n.includes('smørum')) return played.some(p => p.includes('smørum') && !p.includes('skebjerg'));
+  if (n.includes('skovbo')) return played.some(p => p.includes('skovbo'));
+  if (n.includes('korsør')) return played.some(p => p.includes('korsør'));
+  if (n.includes('værløse')) return played.some(p => p.includes('værløse'));
+  if (n.includes('nivå')) return played.some(p => p.includes('nivå'));
+  const first = n.split(' ')[0];
+  return played.some(p => p.includes(first) || first.includes(p.split(' ')[0]));
+}
+
+function buildDanmark() {
+  // Fix label for The National
+  const statsRow = document.getElementById('dk-stats-row');
+  const regionsEl = document.getElementById('dk-regions');
+
+  let totalPlayed = 0;
+  const regionStats = {};
+
+  Object.entries(danmarkCourses).forEach(([region, clubs]) => {
+    const played = clubs.filter(c => coursePlayedKey(c));
+    regionStats[region] = { total: clubs.length, played: played.length };
+    if (region !== 'Sverige (besøgt)') totalPlayed += played.length;
+  });
+
+  const pct = Math.round((totalPlayed / TOTAL_DK_18H) * 100 * 10) / 10;
+
+  // Stats row
+  statsRow.innerHTML = `
+    <div class="dk-stat-card"><div class="dsv">${totalPlayed}</div><div class="dsl">Baner spillet</div></div>
+    <div class="dk-stat-card"><div class="dsv">${TOTAL_DK_18H}</div><div class="dsl">Danske 18H baner</div></div>
+    <div class="dk-stat-card"><div class="dsv">${pct}%</div><div class="dsl">Af alle danske baner</div></div>
+    <div class="dk-stat-card" style="flex:2;min-width:200px">
+      <div class="dsl" style="margin-bottom:8px">Fremgang</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:var(--green-bright);border-radius:5px;transition:width 0.8s ease"></div>
+        </div>
+        <span style="font-size:13px;font-family:'DM Mono',monospace;color:var(--green-bright)">${pct}%</span>
+      </div>
+    </div>
+  `;
+
+  // Regions
+  Object.entries(danmarkCourses).forEach(([region, clubs]) => {
+    const stats = regionStats[region];
+    const regionPct = Math.round((stats.played / stats.total) * 100);
+
+    const section = document.createElement('div');
+    section.className = 'region-section';
+    section.innerHTML = `
+      <div class="region-header">
+        <h3>${region} <span style="font-size:12px;color:var(--muted);font-weight:400">${stats.played}/${stats.total} baner</span></h3>
+        <div class="region-progress-wrap">
+          <div class="region-bar-bg"><div class="region-bar-fill" style="width:${regionPct}%"></div></div>
+          <span class="region-pct">${regionPct}%</span>
+        </div>
+      </div>
+      <div class="course-list">
+        ${clubs.map(c => {
+          const played = coursePlayedKey(c);
+          return `<div class="course-item ${played ? 'played' : 'not-played'}">
+            <div class="course-check ${played ? 'yes' : 'no'}">${played ? '✓' : ''}</div>
+            <span>${c}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+    regionsEl.appendChild(section);
+  });
+}
+
+function hideTooltips() {
+  ['bar-tooltip','line-tooltip'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+
+function showTabFromIntro(tab) {
+  hideTooltips();
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  const tabs = document.querySelectorAll('.tab');
+  const tabMap = { map: 0, rounds: 1, danmark: 2, guide: 3 };
+  if (tabs[tabMap[tab]]) tabs[tabMap[tab]].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (tab === 'map') drawCharts();
+}
+
+// ── TABS ──
+function showTab(tab) {
+  hideTooltips();
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'map') drawCharts();
+}
+
+function getBarLabel(courseName) {
+  if (courseName.toLowerCase().includes('national')) return 'Bara';
+  if (courseName.toLowerCase().includes('søllerød')) return 'Søllerød';
+  if (courseName.toLowerCase().includes('hjortespring')) return 'Hjorte.';
+  if (courseName.toLowerCase().includes('hillerød')) return 'Hillerød';
+  if (courseName.toLowerCase().includes('mølleåen')) return 'Mølleå';
+  if (courseName.toLowerCase().includes('albertslund')) return 'Albert.';
+  if (courseName.toLowerCase().includes('smørum')) return 'Smørum';
+  if (courseName.toLowerCase().includes('harekær')) return 'Harekær';
+  if (courseName.toLowerCase().includes('nivå')) return 'Nivå';
+  if (courseName.toLowerCase().includes('køge')) return 'Køge';
+  if (courseName.toLowerCase().includes('ishøj')) return 'Ishøj';
+  if (courseName.toLowerCase().includes('skovbo')) return 'Skovbo';
+  if (courseName.toLowerCase().includes('korsør')) return 'Korsør';
+  if (courseName.toLowerCase().includes('værløse')) return 'Værløse';
+  return courseName.split(' ')[0].substring(0, 7);
+}
+// ── MAP ──
+let map, markers = [];
+function initMap() {
+  map = L.map('map', {
+    center: [55.75, 12.45],
+    zoom: 9,
+    zoomControl: true,
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '©OpenStreetMap ©CartoDB',
+    maxZoom: 18
+  }).addTo(map);
+
+  courses.forEach((c, i) => {
+    const best = getBestPts(c.name);
+    const count = getRoundCount(c.name);
+    const avg = getAvgPts(c.name);
+
+    let color = '#c0392b';
+    if (c.home) color = '#3b82f6';
+    else if (best >= 36) color = '#2d6a35';
+    else if (best >= 30) color = '#5aab65';
+    else if (best >= 26) color = '#d4a843';
+    else color = '#c0392b';
+
+    const marker = L.circleMarker([c.lat, c.lng], {
+      radius: c.home ? 10 : (count > 1 ? 8 : 6),
+      fillColor: color,
+      color: '#0d1a0f',
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.9
+    }).addTo(map);
+
+    const popupContent = `
+      <div class="popup-name">${c.name}</div>
+      ${c.home ? '<div class="popup-stat" style="color:#3b82f6">★ Hjemmebane</div>' : ''}
+      <div class="popup-stat">Runder: <span>${count || 0}</span></div>
+      ${best ? `<div class="popup-stat">Bedste: <span>${best} pts</span></div>` : ''}
+      ${avg ? `<div class="popup-stat">Snit: <span>${avg} pts</span></div>` : ''}
+    `;
+
+    marker.bindPopup(popupContent);
+    marker.on('click', () => highlightCourse(c.name));
+    markers.push({ marker, name: c.name });
+  });
+}
+
+function highlightCourse(name) {
+  document.querySelectorAll('.course-card').forEach(c => {
+    c.classList.toggle('highlighted', c.dataset.name === name);
+    if (c.dataset.name === name) c.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+}
+
+// ── COURSE GRID ──
+function buildCourseGrid() {
+  const grid = document.getElementById('course-grid');
+  courses.forEach(c => {
+    const best = getBestPts(c.name);
+    const avg = getAvgPts(c.name);
+    const count = getRoundCount(c.name);
+    if (!count) return;
+
+    const card = document.createElement('div');
+    card.className = 'course-card';
+    card.dataset.name = c.name;
+    card.innerHTML = `
+      <div class="cc-name">${c.name}${c.home ? ' <span style="color:#3b82f6;font-size:11px">★ hjem</span>' : ''}</div>
+      <div class="cc-stats">
+        <div class="cc-stat"><div class="v">${best || '–'}</div><div class="l">Bedste</div></div>
+        <div class="cc-stat"><div class="v">${avg || '–'}</div><div class="l">Snit</div></div>
+        <div class="cc-stat"><div class="v">${count}</div><div class="l">Runder</div></div>
+      </div>
+    `;
+    card.onclick = () => {
+      const course = courses.find(x => x.name === c.name);
+      if (course) {
+        map.setView([course.lat, course.lng], 12, { animate: true });
+        const m = markers.find(x => x.name === c.name);
+        if (m) m.marker.openPopup();
+      }
+      highlightCourse(c.name);
+    };
+    grid.appendChild(card);
+  });
+}
+
+// ── ROUNDS TABLE ──
+let currentFilter = 'all';
+function buildRoundsTable(filter = 'all') {
+  currentFilter = filter;
+  const body = document.getElementById('rounds-body');
+  body.innerHTML = '';
+
+  const filtered = rounds.filter(r => {
+    if (filter === '18h') return !r.is9;
+    if (filter === '9h') return r.is9;
+    return true;
+  }).slice().reverse();
+
+  filtered.forEach(r => {
+    const tr = document.createElement('tr');
+    const normalizedPts = r.is9 ? r.pts * 2 : r.pts;
+    const ptsClass = normalizedPts >= 36 ? 'pts-great' : normalizedPts >= 30 ? 'pts-good' : normalizedPts >= 26 ? 'pts-warn' : 'pts-bad';
+    const d = new Date(r.date);
+    const dateStr = d.toLocaleDateString('da-DK', { day:'2-digit', month:'short' });
+    tr.innerHTML = `
+      <td class="date-cell">${dateStr}</td>
+      <td class="course-cell">${r.course}${r.note ? ' <span style="font-size:11px;color:var(--muted)">*</span>' : ''}</td>
+      <td><span class="hcp-pill">${r.hcp.toFixed(1)}</span></td>
+      <td><span class="pts-badge ${ptsClass}">${r.pts}</span></td>
+      <td style="font-family:'DM Mono',monospace;font-size:13px;color:var(--muted)">${r.score}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+function filterRounds(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildRoundsTable(filter);
+}
+
+// ── CHARTS ──
+let chartsDrawn = false;
+function drawCharts() {
+  chartsDrawn = true;
+  const hcpData = rounds.map((r, i) => ({
+    x: new Date(r.date),
+    y: r.hcp,
+    course: r.course,
+    pts: r.pts,
+    is9: r.is9,
+    hcpAfter: rounds[i + 1] ? rounds[i + 1].hcp : r.hcp
+  }));
+  drawLineChart('hcp-chart', hcpData, 'HCP', '#5aab65', true);
+
+  const ptsData = rounds.map(r => ({ x: new Date(r.date), y: r.is9 ? r.pts * 2 : r.pts, rawPts: r.pts, label: r.course, is9: r.is9 }));
+  drawBarChart('pts-chart', ptsData);
+}
+
+function drawLineChart(canvasId, data, label, color, inverted) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.parentElement.clientWidth - 48;
+  canvas.height = 200;
+  const W = canvas.width, H = canvas.height;
+  const pad = { t: 16, r: 16, b: 32, l: 40 };
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+
+  const vals = data.map(d => d.y);
+  const recentCutoff = vals.length > 8 ? vals.slice(Math.floor(vals.length * 0.4)) : vals;
+  const zoomMin = Math.min(...recentCutoff);
+  const zoomMax = Math.max(...recentCutoff);
+  const minY = Math.max(0, zoomMin - 3);
+  const maxY = zoomMax + 3;
+
+  const xOf = (i) => pad.l + (cw / (data.length - 1)) * i;
+  const yOf = (v) => {
+    const clamped = Math.max(minY, Math.min(maxY, v));
+    return pad.t + ch - ((clamped - minY) / (maxY - minY)) * ch;
+  };
+
+  // Tooltip
+  let tip = document.getElementById('line-tooltip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'line-tooltip';
+    tip.style.cssText = `
+      position:fixed;pointer-events:none;z-index:999;display:none;
+      background:#1a271c;border:1px solid #2a5230;border-radius:8px;
+      padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;
+      color:#f0f4ee;min-width:180px;box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    `;
+    document.body.appendChild(tip);
+  }
+
+  function drawAll(highlightIdx = -1) {
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = '#1e3021';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.t + (ch / 4) * i;
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+      const val = maxY - ((maxY - minY) / 4) * i;
+      ctx.fillStyle = '#6b826e';
+      ctx.font = '10px DM Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(val.toFixed(1), pad.l - 6, y + 4);
+    }
+
+    // Gradient fill
+    const grad = ctx.createLinearGradient(0, pad.t, 0, H - pad.b);
+    grad.addColorStop(0, 'rgba(90,171,101,0.2)');
+    grad.addColorStop(1, 'rgba(90,171,101,0)');
+
+    ctx.beginPath();
+    data.forEach((d, i) => {
+      i === 0 ? ctx.moveTo(xOf(i), yOf(d.y)) : ctx.lineTo(xOf(i), yOf(d.y));
+    });
+    ctx.lineTo(xOf(data.length - 1), H - pad.b);
+    ctx.lineTo(xOf(0), H - pad.b);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    data.forEach((d, i) => {
+      i === 0 ? ctx.moveTo(xOf(i), yOf(d.y)) : ctx.lineTo(xOf(i), yOf(d.y));
+    });
+    ctx.stroke();
+
+    // Dots
+    data.forEach((d, i) => {
+      const isHighlight = i === highlightIdx;
+      ctx.beginPath();
+      ctx.arc(xOf(i), yOf(d.y), isHighlight ? 6 : 3, 0, Math.PI * 2);
+      ctx.fillStyle = isHighlight ? '#ffffff' : color;
+      if (isHighlight) {
+        ctx.shadowColor = '#5aab65';
+        ctx.shadowBlur = 8;
+      }
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+
+    // X labels
+    ctx.fillStyle = '#6b826e';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'center';
+    data.forEach((d, i) => {
+      if (i % 4 === 0) {
+        const lbl = d.x.toLocaleDateString('da-DK', { day:'2-digit', month:'short' });
+        ctx.fillText(lbl, xOf(i), H - 4);
+      }
+    });
+  }
+
+  drawAll();
+
+  function findNearest(mx, my) {
+    let found = -1;
+    let minDist = 20;
+    data.forEach((d, i) => {
+      const dx = mx - xOf(i);
+      const dy = my - yOf(d.y);
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < minDist) { minDist = dist; found = i; }
+    });
+    return found;
+  }
+
+  function showTip(found, clientX, clientY) {
+    const d = data[found];
+    const dateStr = d.x.toLocaleDateString('da-DK', { day:'2-digit', month:'short', year:'numeric' });
+    const hcpChange = d.hcpAfter !== undefined ? (d.hcpAfter - d.y) : 0;
+    const changeColor = hcpChange < 0 ? '#5aab65' : hcpChange > 0 ? '#e74c3c' : '#8a9e8c';
+    const changeStr = hcpChange === 0 ? '→' : hcpChange < 0 ? `↓ ${Math.abs(hcpChange).toFixed(1)}` : `↑ ${hcpChange.toFixed(1)}`;
+    const ptsDisplay = d.pts ? `${d.pts}${d.is9 ? ' (9H)' : ''}` : '–';
+
+    tip.innerHTML = `
+      <div style="font-weight:600;margin-bottom:6px;color:#5aab65">${d.course || '–'}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8a9e8c;margin-bottom:8px">${dateStr}</div>
+      <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:4px">
+        <span style="color:#8a9e8c">HCP før</span>
+        <span style="font-weight:600">${d.y.toFixed(1)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:4px">
+        <span style="color:#8a9e8c">HCP efter</span>
+        <span style="font-weight:600;color:${changeColor}">${d.hcpAfter !== undefined ? d.hcpAfter.toFixed(1) : '–'} <span style="font-size:11px">${changeStr}</span></span>
+      </div>
+      ${d.pts ? `<div style="display:flex;justify-content:space-between;gap:16px">
+        <span style="color:#8a9e8c">Points</span>
+        <span style="font-weight:600">${ptsDisplay}</span>
+      </div>` : ''}
+    `;
+    tip.style.display = 'block';
+    tip.style.left = Math.min(clientX + 14, window.innerWidth - 210) + 'px';
+    tip.style.top = Math.max(clientY - 120, 10) + 'px';
+  }
+
+  canvas.onmousemove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const found = findNearest(e.clientX - rect.left, e.clientY - rect.top);
+    if (found >= 0) {
+      showTip(found, e.clientX, e.clientY);
+      canvas.style.cursor = 'pointer';
+      drawAll(found);
+    } else {
+      tip.style.display = 'none';
+      canvas.style.cursor = 'default';
+      drawAll();
+    }
+  };
+
+  canvas.onmouseleave = () => {
+    tip.style.display = 'none';
+    canvas.style.cursor = 'default';
+    drawAll();
+  };
+
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const found = findNearest(touch.clientX - rect.left, touch.clientY - rect.top);
+    if (found >= 0) {
+      showTip(found, touch.clientX, touch.clientY);
+      drawAll(found);
+    } else {
+      tip.style.display = 'none';
+      drawAll();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', () => {
+    setTimeout(() => {
+      tip.style.display = 'none';
+      drawAll();
+    }, 2000);
+  });
+}
+
+function drawBarChart(canvasId, data) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.parentElement.clientWidth - 48;
+  canvas.height = 300;
+  const W = canvas.width, H = canvas.height;
+  const pad = { t: 16, r: 16, b: 90, l: 40 };
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+
+  const maxY = Math.max(...data.map(d => d.y)) + 4;
+  const barW = Math.max(4, (cw / data.length) - 3);
+
+  // Tooltip element
+  let tip = document.getElementById('bar-tooltip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'bar-tooltip';
+    tip.style.cssText = `
+      position:fixed;pointer-events:none;z-index:999;display:none;
+      background:#1a271c;border:1px solid #2a5230;border-radius:8px;
+      padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;
+      color:#f0f4ee;min-width:160px;box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    `;
+    document.body.appendChild(tip);
+  }
+
+  function drawBars(highlightIdx = -1) {
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = '#1e3021';
+    ctx.lineWidth = 1;
+    [0, 10, 20, 30, 40, 50].forEach(v => {
+      if (v > maxY) return;
+      const y = pad.t + ch - (v / maxY) * ch;
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+      ctx.fillStyle = '#6b826e';
+      ctx.font = '10px DM Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(v, pad.l - 6, y + 4);
+    });
+
+    // Baseline
+    ctx.strokeStyle = '#2a5230';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, pad.t + ch);
+    ctx.lineTo(W - pad.r, pad.t + ch);
+    ctx.stroke();
+
+    data.forEach((d, i) => {
+      const x = pad.l + (cw / data.length) * i + 1;
+      const barH = (d.y / maxY) * ch;
+      const y = pad.t + ch - barH;
+      const baseColor = d.y >= 36 ? '#2d6a35' : d.y >= 30 ? '#5aab65' : d.y >= 26 ? '#d4a843' : '#c0392b';
+      const color = i === highlightIdx ? '#ffffff' : baseColor;
+      const alpha = highlightIdx >= 0 && i !== highlightIdx ? 0.4 : 1;
+
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.roundRect(x, y, barW, barH, [2, 2, 0, 0]);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Label — roteret fra baseline nedad
+      const shortLabel = getBarLabel(d.label);
+      ctx.save();
+      ctx.fillStyle = i === highlightIdx ? '#f0f4ee' : '#8a9e8c';
+      ctx.font = '10px DM Sans, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.translate(x + barW / 2 + 3, pad.t + ch + 8);
+      ctx.rotate(-Math.PI / 4);
+      ctx.fillText(shortLabel, 0, 0);
+      ctx.restore();
+    });
+  }
+
+  drawBars();
+
+  // Mouse events
+  canvas.onmousemove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    let found = -1;
+
+    data.forEach((d, i) => {
+      const x = pad.l + (cw / data.length) * i + 1;
+      const barH = (d.y / maxY) * ch;
+      const y = pad.t + ch - barH;
+      if (mx >= x && mx <= x + barW && my >= y && my <= pad.t + ch) {
+        found = i;
+      }
+    });
+
+    if (found >= 0) {
+      const d = data[found];
+      const rawPts = d.rawPts !== undefined ? d.rawPts : d.y;
+      const dateStr = d.x.toLocaleDateString('da-DK', { day:'2-digit', month:'short', year:'numeric' });
+      const is9note = d.is9 ? ' <span style="color:#8a9e8c;font-size:11px">(9H × 2)</span>' : '';
+      tip.innerHTML = `
+        <div style="font-weight:600;margin-bottom:6px;color:#5aab65">${d.label}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8a9e8c;margin-bottom:8px">${dateStr}</div>
+        <div style="display:flex;justify-content:space-between;gap:16px">
+          <span style="color:#8a9e8c">Points</span>
+          <span style="font-weight:600">${rawPts}${is9note}</span>
+        </div>
+      `;
+      tip.style.display = 'block';
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top = (e.clientY - 40) + 'px';
+      canvas.style.cursor = 'pointer';
+      drawBars(found);
+    } else {
+      tip.style.display = 'none';
+      canvas.style.cursor = 'default';
+      drawBars();
+    }
+  };
+
+  canvas.onmouseleave = () => {
+    tip.style.display = 'none';
+    canvas.style.cursor = 'default';
+    drawBars();
+  };
+
+  // Touch support
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const mx = touch.clientX - rect.left;
+    const my = touch.clientY - rect.top;
+    let found = -1;
+
+    data.forEach((d, i) => {
+      const x = pad.l + (cw / data.length) * i + 1;
+      const barH = (d.y / maxY) * ch;
+      const y = pad.t + ch - barH;
+      if (mx >= x && mx <= x + barW && my >= y && my <= pad.t + ch) {
+        found = i;
+      }
+    });
+
+    if (found >= 0) {
+      const d = data[found];
+      const rawPts = d.rawPts !== undefined ? d.rawPts : d.y;
+      const dateStr = d.x.toLocaleDateString('da-DK', { day:'2-digit', month:'short', year:'numeric' });
+      const is9note = d.is9 ? ' <span style="color:#8a9e8c;font-size:11px">(9H × 2)</span>' : '';
+      tip.innerHTML = `
+        <div style="font-weight:600;margin-bottom:6px;color:#5aab65">${d.label}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8a9e8c;margin-bottom:8px">${dateStr}</div>
+        <div style="display:flex;justify-content:space-between;gap:16px">
+          <span style="color:#8a9e8c">Points</span>
+          <span style="font-weight:600">${rawPts}${is9note}</span>
+        </div>
+      `;
+      // Position tooltip above the finger
+      tip.style.display = 'block';
+      tip.style.left = Math.min(touch.clientX + 14, window.innerWidth - 180) + 'px';
+      tip.style.top = (touch.clientY - 90) + 'px';
+      drawBars(found);
+    } else {
+      tip.style.display = 'none';
+      drawBars();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', () => {
+    setTimeout(() => {
+      tip.style.display = 'none';
+      drawBars();
+    }, 1500);
+  });
+}
+
+// ── STATS ──
+function buildStats() {
+  if (!rounds.length) return;
+  const fullRounds = rounds.filter(r => !r.is9);
+  const allPts = rounds.map(r => r.pts);
+  const best = Math.max(...rounds.map(r => r.is9 ? r.pts * 2 : r.pts));
+  const avg = fullRounds.length ? Math.round(fullRounds.reduce((a,b) => a+b.pts, 0) / fullRounds.length) : '–';
+  const uniqueCourses = new Set(rounds.map(r => r.course.split(' ')[0])).size;
+  const validScoreRounds = fullRounds.filter(r => r.score >= 90);
+  const bestScore = validScoreRounds.length ? Math.min(...validScoreRounds.map(r => r.score)) : null;
+
+  // HCP display: use hcpAfter of last round if available, else hcp of last round
+  const lastRound = rounds[rounds.length - 1];
+  const displayHcp = lastRound
+    ? (lastRound.hcpAfter !== undefined ? lastRound.hcpAfter : lastRound.hcp)
+    : '–';
+  document.getElementById('current-hcp').textContent = typeof displayHcp === 'number' ? displayHcp.toFixed(1) : displayHcp;
+
+  document.getElementById('stat-rounds').textContent = rounds.length;
+  document.getElementById('stat-best').textContent = best;
+  document.getElementById('stat-avg').textContent = avg;
+  document.getElementById('stat-courses').textContent = uniqueCourses;
+
+  const el = document.getElementById('stat-bestscore');
+  if (bestScore !== null) {
+    el.textContent = bestScore;
+    if (bestScore < 90) {
+      el.style.color = '#27ae60';
+    } else {
+      el.style.color = bestScore < 95 ? '#d4a843' : '#e2ead3';
+    }
+  }
+}
+
+// ── GUIDE / FORM ──
+let formIs9 = false;
+
+function setHoles(is9) {
+  formIs9 = is9;
+  document.getElementById('btn-18').classList.toggle('active', !is9);
+  document.getElementById('btn-9').classList.toggle('active', is9);
+}
+
+function submitRound() {
+  const date     = document.getElementById('f-date').value;
+  const course   = document.getElementById('f-course').value.trim();
+  const hcp      = parseFloat(document.getElementById('f-hcp').value);
+  const hcpAfter = parseFloat(document.getElementById('f-hcp-after').value);
+  const pts      = parseInt(document.getElementById('f-pts').value);
+  const score    = parseInt(document.getElementById('f-score').value);
+  const msg      = document.getElementById('form-msg');
+
+  if (!date || !course || isNaN(hcp) || isNaN(pts) || isNaN(score)) {
+    msg.textContent = '⚠ Udfyld alle felter (HCP efter er valgfrit).';
+    msg.style.color = '#e74c3c';
+    return;
+  }
+
+  rounds = getRounds();
+  const entry = { date, course, hcp, pts, score, is9: formIs9 };
+  if (!isNaN(hcpAfter)) entry.hcpAfter = hcpAfter;
+  rounds.push(entry);
+  rounds.sort((a, b) => new Date(a.date) - new Date(b.date));
+  saveRounds(rounds);
+
+  msg.textContent = '✓ Runde gemt! Statistik opdateret.';
+  msg.style.color = '#27ae60';
+
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-course').value = '';
+  document.getElementById('f-hcp').value = '';
+  document.getElementById('f-hcp-after').value = '';
+  document.getElementById('f-pts').value = '';
+  document.getElementById('f-score').value = '';
+
+  setTimeout(() => { msg.textContent = ''; }, 3000);
+  refreshAll();
+}
+
+function getSaved() {
+  return getRounds();
+}
+
+function clearSaved() {
+  if (confirm('Slet alle runder og start forfra?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    initRounds();
+    rounds = getRounds();
+    refreshAll();
+  }
+}
+
+function deleteOne(i) {
+  rounds = getRounds();
+  rounds.splice(i, 1);
+  saveRounds(rounds);
+  refreshAll();
+}
+
+function refreshAll() {
+  rounds = getRounds();
+  // Rebuild course grid
+  document.getElementById('course-grid').innerHTML = '';
+  buildCourseGrid();
+  buildRoundsTable();
+  buildStats();
+  // Rebuild Danmark
+  document.getElementById('dk-stats-row').innerHTML = '';
+  document.getElementById('dk-regions').innerHTML = '';
+  buildDanmark();
+  // Redraw charts
+  chartsDrawn = false;
+  setTimeout(drawCharts, 50);
+  renderSaved();
+}
+
+function renderSaved() {
+  const el = document.getElementById('saved-rounds-list');
+  const saved = getRounds();
+  if (!saved.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">Ingen runder endnu.</div>';
+    return;
+  }
+  el.innerHTML = [...saved].reverse().map((r, i) => {
+    const realIdx = saved.length - 1 - i;
+    return `
+    <div class="saved-round-row">
+      <span style="font-family:'DM Mono',monospace;color:var(--muted);font-size:12px">${r.date}</span>
+      <span style="flex:1;margin:0 12px;font-weight:500">${r.course}${r.is9 ? ' <span style="font-size:10px;color:var(--muted)">(9H)</span>' : ''}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">HCP ${r.hcp} · </span>
+      <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green-bright);margin:0 6px">${r.pts}pt</span>
+      <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">${r.score}sl</span>
+      <button class="saved-del" onclick="deleteOne(${realIdx})">×</button>
+    </div>
+  `}).join('');
+}
+
+// Set today's date as default
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('f-date').value = today;
+  renderSaved();
+});
+
+// ── INIT ──
+initRounds();          // seed data første gang
+rounds = getRounds();  // læs fra localStorage
+initMap();
+buildCourseGrid();
+buildRoundsTable();
+buildStats();
+buildDanmark();
+setTimeout(drawCharts, 500);
+</script>
+</body>
+</html>
